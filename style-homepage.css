@@ -1,0 +1,36 @@
+.img-plattegrond { 
+    width: 650px; 
+    float: right;
+    margin-right: 50px;
+}
+
+.container {
+    display: flex; /* Use flexbox to align elements side by side */
+    justify-content: space-between; /* Ensure they are spaced apart */
+    align-items: center; /* Aligns items vertically at the same height */
+    height: 80vh; /* Optional: Makes sure the container spans the full viewport height */
+    align-items: center;
+    margin-top: 20px; /* Move container down by 50px */
+    margin-left: 200px;  /* Move container to the right by 50px */
+    background-color: antiquewhite;
+    margin-right: 800px;
+    border-radius: 15px;
+}
+  
+  .button-box {
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    margin-left: 60px;
+  }
+  
+  .button-box button {
+    margin-bottom: 20px; /* Adds space between the buttons */
+    padding: 20px 40px; /* Adjust button size */
+    font-size: 16px;
+    color:white;
+    background-color: dodgerblue;
+  }
+
+  
+
+  

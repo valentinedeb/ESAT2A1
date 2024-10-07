@@ -1,0 +1,82 @@
+:root {
+    --background-color: #1e90ff;
+    --secondary-background-color: rgb(227, 226, 226);
+    --hover-color: #4682b4;
+    --text-color: white;
+    --font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    --box-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --box-shadow-muted: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    background-color: var(--secondary-background-color);
+    margin: 0; 
+    font-family: var(--font-family);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+h1.our-name {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    padding: 15px 20px;
+    text-align: center;
+    border-radius: 8px;
+    font-size: 2em;
+    box-shadow: var(--box-shadow-light);
+    margin-bottom: 20px;
+}
+
+.login-container {
+    background-color: var(--background-color);
+    padding: 30px;
+    border-radius: 10px; 
+    box-shadow: var(--box-shadow-light);
+    width: 300px;
+}
+
+h2.login {
+    color: var(--text-color);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em; 
+    box-shadow: var(--box-shadow-muted);
+}
+
+.login-button {
+    padding: 12px 24px;
+    background-color: var(--text-color);
+    color: var(--background-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: block;
+    text-align: center;
+    font-size: 1em;
+    transition: background-color 0.3s;
+    text-decoration: none;
+}
+
+.login-button:hover {
+    background-color: var(--hover-color);
+}
