@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lights living</title>
+    <style>
+        .balk {
+            width: 500px;
+            height: 20px;
+            background-color: lightgray;
+            position: relative;
+            margin: 50px auto;
+        }
+        .box {
+            width: 50px;
+            height: 50px;
+            background-color: coral;
+            position: absolute;
+            top: -15px; /* Zorgt dat de box mooi boven de balk uitsteekt */
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;">Smarthouse</h1>
+    <h2 style="text-align:center;">Adjust the strength of your living lights.</h2>
+
+    <div class="balk">
+        <div class="box" id="draggableBox"></div>
+    </div>
+    <script>
+        // JavaScript voor het slepen van de box
+        const box = document.getElementById('draggableBox');
+        const balk = document.querySelector('.balk');
+
+        let isDragging = false;
+
+        box.addEventListener('mousedown', (e) => {
+            isDragging = true;
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            isDragging = false;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                // Bereken de positie van de muis ten opzichte van de balk
+                let x = e.clientX - balk.offsetLeft - box.offsetWidth / 2;
+
+                // Zorg dat de box binnen de balk blijft
+                if (x < 0) x = 0;
+                if (x > balk.offsetWidth - box.offsetWidth) x = balk.offsetWidth - box.offsetWidth;
+
+                // Pas de nieuwe positie van de box aan
+                box.style.left = `${x}px`;
+            }
+        });
+    </script>
+</body>
+</html>
