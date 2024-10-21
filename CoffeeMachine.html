@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen - Coffee Machine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: #003366;
+            margin: 10px 0;
+            padding: 5px;
+            border-bottom: 2px solid #0056b3;
+            width: 80%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-top: 80px;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+
+        .navbar {
+            background-color: #003366;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            margin: 0 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+            border-radius: 5px;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 70px;
+            height: 38px;
+            margin-top: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 38px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(32px);
+        }
+
+        .toggle-label {
+            display: inline-block;
+            margin-left: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 20px;
+            transition: background-color 0.4s, color 0.4s;
+        }
+
+        .toggle-label.off {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .toggle-label.on {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .button-box {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .button-box a {
+            text-decoration: none;
+            padding: 15px 25px;
+            margin: 10px;
+            color: white;
+            background: linear-gradient(135deg, #0066cc, #003366);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+            font-size: 16px;
+            cursor: pointer; 
+        }
+
+        .button-box a:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #0088ff, #004488);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .button-box a i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .queue {
+            margin-top: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            padding: 10px;
+            width: 80%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .queue h3 {
+            margin: 0;
+            color: #003366;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .queue ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+
+        .queue li {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-container {
+            margin-top: 10px;
+            width: 100%;
+            background-color: #ccc;
+            border-radius: 5px;
+            height: 20px;
+            display: none; 
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            transition: width 1s ease; 
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <a href="House.html">Home</a>
+        <a href="Kitchen.html">Kitchen</a>
+        <a href="Garage.html">Garage</a>
+        <a href="LivingRoom.html">Living Room</a>
+        <a href="StudyRoom.html">Study Room</a>
+    </div>
+
+    <h1>Smarthouse</h1>
+    <h2>Turn on your coffee machine</h2>
+
+    <div class="container">
+        <label class="switch">
+            <input type="checkbox" id="toggleSwitch">
+            <span class="slider"></span>
+        </label>
+        <span id="toggleLabel" class="toggle-label off">Off</span>
+    </div>
+
+    <h2>Which coffee do you want?</h2>
+
+    <div class="button-box">
+        <a id="espressoButton">Espresso</a>
+        <a id="longoButton">Longo</a>
+        <a id="cappuccinoButton">Cappuccino</a>
+        <a id="latteButton">Latte</a>
+    </div>
+
+    <div class="queue">
+        <h3>Coffee Queue</h3>
+        <ul id="coffeeQueueList"></ul>
+        <div class="progress-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        const toggleSwitch = document.getElementById("toggleSwitch");
+        const toggleLabel = document.getElementById("toggleLabel");
+        const coffeeQueueList = document.getElementById("coffeeQueueList");
+        const progressContainer = document.querySelector(".progress-container");
+        const progressBar = document.getElementById("progressBar");
+
+        const espressoButton = document.getElementById("espressoButton");
+        const longoButton = document.getElementById("longoButton");
+        const cappuccinoButton = document.getElementById("cappuccinoButton");
+        const latteButton = document.getElementById("latteButton");
+
+        let coffeeQueue = [];
+
+        window.onload = function () {
+            const savedState = localStorage.getItem('coffeeMachineState');
+            if (savedState === 'on') {
+                toggleSwitch.checked = true;
+                toggleLabel.textContent = "On";
+                toggleLabel.classList.remove("off");
+                toggleLabel.classList.add("on");
+            } else {
+                toggleSwitch.checked = false;
+                toggleLabel.textContent = "Off";
+                toggleLabel.classList.remove("on");
+                toggleLabel.classList.add("off");
+            }
+            disableButtons(savedState === 'off'); // Disable buttons if machine is off
+        };
+
+        toggleSwitch.addEventListener("change", () => {
+            const isTurningOn = toggleSwitch.checked;
+            toggleLabel.textContent = isTurningOn ? "Turning on..." : "Turning off...";
+            disableButtons(true); // Disable coffee buttons
+
+            setTimeout(() => {
+                if (isTurningOn) {
+                    toggleLabel.textContent = "On";
+                    toggleLabel.classList.remove("off");
+                    toggleLabel.classList.add("on");
+                    localStorage.setItem('coffeeMachineState', 'on');
+                } else {
+                    toggleLabel.textContent = "Off";
+                    toggleLabel.classList.remove("on");
+                    toggleLabel.classList.add("off");
+                    localStorage.setItem('coffeeMachineState', 'off');
+                }
+                disableButtons(false); // Re-enable coffee buttons
+            }, 5000);
+        });
+
+        function disableButtons(disable) {
+            espressoButton.style.pointerEvents = disable ? 'none' : 'auto';
+            longoButton.style.pointerEvents = disable ? 'none' : 'auto';
+            cappuccinoButton.style.pointerEvents = disable ? 'none' : 'auto';
+            latteButton.style.pointerEvents = disable ? 'none' : 'auto';
+            espressoButton.style.opacity = disable ? '0.5' : '1';
+            longoButton.style.opacity = disable ? '0.5' : '1';
+            cappuccinoButton.style.opacity = disable ? '0.5' : '1';
+            latteButton.style.opacity = disable ? '0.5' : '1';
+        }
+
+        function addToQueue(coffeeType) {
+            const isMachineOn = toggleSwitch.checked;
+            if (!isMachineOn) {
+                alert("The coffee machine is off. Please turn it on first.");
+                return;
+            }
+            coffeeQueue.push(coffeeType);
+            updateCoffeeQueue();
+            if (coffeeQueue.length === 1) {
+                startCoffeePreparation();
+            }
+        }
+
+        function updateCoffeeQueue() {
+            coffeeQueueList.innerHTML = '';
+            coffeeQueue.forEach((coffee, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${index + 1}. ${coffee}`;
+                coffeeQueueList.appendChild(li);
+            });
+        }
+
+        function startCoffeePreparation() {
+            if (coffeeQueue.length === 0) return;
+
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = `${progress}%`;
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    progressContainer.style.display = 'none';
+                    coffeeQueue.shift();
+                    updateCoffeeQueue();
+                    startCoffeePreparation();
+                }
+            }, 1000);
+        }
+
+        espressoButton.addEventListener("click", () => addToQueue("Espresso"));
+        longoButton.addEventListener("click", () => addToQueue("Longo"));
+        cappuccinoButton.addEventListener("click", () => addToQueue("Cappuccino"));
+        latteButton.addEventListener("click", () => addToQueue("Latte"));
+
+    </script>
+
+</body>
+</html>
+
+
+
