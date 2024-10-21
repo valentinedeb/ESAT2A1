@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Your House</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      background-color: #f0f0f0;
+      color: #333;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow: hidden;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #003366;
+      margin: 10px 0;
+      padding: 5px;
+      border-bottom: 2px solid #0056b3;
+      width: 80%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    h1 {
+      font-size: 24px; 
+      margin-top: 80px;
+    }
+
+    h2 {
+      font-size: 20px; 
+    }
+
+    .navbar {
+      background-color: #003366;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      margin: 0 5px;
+      transition: background-color 0.3s;
+    }
+
+    .navbar a:hover {
+      background-color: #0056b3;
+      border-radius: 5px;
+    }
+
+    .img-plattegrond { 
+      width: 100%;
+      max-width: 400px;
+      border-radius: 15px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      max-width: 90%;
+      height: 60%;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+
+    .room-menu {
+      margin-right: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%; /* Make room menu occupy full height */
+    }
+
+    .room-menu a {
+      text-decoration: none;
+      padding: 20px 30px; /* Increased padding for bigger buttons */
+      margin: 6px 0;
+      color: white;
+      background: linear-gradient(135deg, #0066cc, #003366);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+    }
+
+    .room-menu a:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #0088ff, #004488);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .room-menu a i {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+
+    @media (max-width: 600px) {
+      .img-plattegrond {
+        width: 80%;
+      }
+
+      .container {
+        flex-direction: column;
+        padding: 20px;
+        height: auto;
+      }
+
+      .room-menu {
+        margin-right: 0;
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <a href="House.html">Home</a>
+    <a href="Kitchen.html">Kitchen</a>
+    <a href="Garage.html">Garage</a>
+    <a href="LivingRoom.html">Living Room</a>
+    <a href="StudyRoom.html">Study Room</a>
+  </div>
+  <h1>Smart House</h1>
+  <h2>Your House</h2>
+  
+  <div class="container">
+    <div class="room-menu">
+      <a href="Kitchen.html"><i class="fas fa-utensils"></i> Kitchen</a>
+      <a href="Garage.html"><i class="fas fa-car"></i> Garage</a>
+      <a href="LivingRoom.html"><i class="fas fa-couch"></i> Living Room</a>
+      <a href="StudyRoom.html"><i class="fas fa-book"></i> Study Room</a>
+    </div>
+
+    <div style="position: relative;">
+      <img class="img-plattegrond" src="plattegrond.jpeg" alt="Plattegrond" usemap="#roommap">
+    </div>
+  </div>
+
+  <map name="roommap">
+
+    <area shape="rect" coords="10,170,185,300" href="Kitchen.html" alt="Kitchen">
+
+    <area shape="rect" coords="185,170,340,300" href="Garage.html" alt="Garage">
+    
+
+    <area shape="rect" coords="120,30,250,170" href="LivingRoom.html" alt="Living Room">
+    
+    <area shape="rect" coords="250,30,340,100" href="StudyRoom.html" alt="Study Room">
+  </map>
+
+</body>
+</html>
