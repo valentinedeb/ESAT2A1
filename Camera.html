@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security - Camera</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #003366;
+            margin: 10px 0;
+            padding: 5px;
+            border-bottom: 2px solid #0056b3;
+            width: 80%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        h1 {
+            font-size: 24px; 
+            margin-top: 80px; 
+        }
+
+        h2 {
+            font-size: 20px; 
+        }
+
+        .navbar {
+            background-color: #003366;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            margin: 0 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+            border-radius: 5px;
+        }
+
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background-color: #0056b3;
+            color: white;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+
+        .logout-button:hover {
+            background-color: #0072e6;
+        }
+
+        .logout-button i {
+            margin-right: 5px;
+            font-size: 18px;
+        }
+
+        .camera-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px; 
+            padding: 20px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+
+        .camera-button {
+            width: 60px; 
+            height: 60px; 
+            border-radius: 50%;
+            background-color: #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s, transform 0.3s;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            font-size: 24px; 
+            margin-bottom: 20px;
+        }
+
+        .camera-button.active {
+            background-color: #28a745; 
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        video {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            .camera-button {
+                width: 50px; 
+                height: 50px; 
+                font-size: 20px; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="House.html">Home</a>
+        <a href="Kitchen.html">Kitchen</a>
+        <a href="Garage.html">Garage</a>
+        <a href="LivingRoom.html">Living Room</a>
+        <a href="StudyRoom.html">Study Room</a>
+        <a href="Security.html">Security</a>
+        <a href="site.html" class="logout-button">
+            <i class="fas fa-sign-out-alt"></i> Logout 
+        </a>
+    </div>
+    <h1>Smart House</h1>
+    <h2>Camera</h2>
+    
+    <div class="camera-container">
+        <div class="camera-button" id="cameraButton" onclick="toggleCamera()">
+            <i class="fas fa-camera"></i>
+        </div>
+        <video id="video" autoplay></video>
+    </div>
+
+    <script>
+        let isCameraOn = false;
+
+        window.onload = function() {
+            const cameraState = localStorage.getItem('cameraState');
+            if (cameraState === 'true') {
+                isCameraOn = true;
+                document.getElementById('cameraButton').classList.add('active');
+                startCamera();
+            }
+        };
+
+        function toggleCamera() {
+            const cameraButton = document.getElementById('cameraButton');
+            isCameraOn = !isCameraOn;
+
+            if (isCameraOn) {
+                cameraButton.classList.add('active');
+                localStorage.setItem('cameraState', 'true');
+                startCamera();
+            } else {
+                cameraButton.classList.remove('active');
+                localStorage.setItem('cameraState', 'false');
+                stopCamera();
+            }
+        }
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('video').srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing the camera: ", error);
+                alert("Unable to access the camera.");
+            }
+        }
+
+        function stopCamera() {
+            const video = document.getElementById('video');
+            const stream = video.srcObject;
+
+            if (stream) {
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
