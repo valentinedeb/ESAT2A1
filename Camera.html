@@ -163,53 +163,74 @@
     </div>
 
     <script>
-        let isCameraOn = false;
+    let isCameraOn = false;
 
-        window.onload = function() {
-            const cameraState = localStorage.getItem('cameraState');
-            if (cameraState === 'true') {
-                isCameraOn = true;
-                document.getElementById('cameraButton').classList.add('active');
-                startCamera();
-            }
-        };
-
-        function toggleCamera() {
-            const cameraButton = document.getElementById('cameraButton');
-            isCameraOn = !isCameraOn;
-
-            if (isCameraOn) {
-                cameraButton.classList.add('active');
-                localStorage.setItem('cameraState', 'true');
-                startCamera();
-            } else {
-                cameraButton.classList.remove('active');
-                localStorage.setItem('cameraState', 'false');
-                stopCamera();
-            }
+    window.onload = function() {
+        // On load, check if the camera state is saved in localStorage
+        const cameraState = localStorage.getItem('cameraState');
+        if (cameraState === 'true') {
+            isCameraOn = true;
+            document.getElementById('cameraButton').classList.add('active');
+            startCamera();
         }
+    };
 
-        async function startCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                document.getElementById('video').srcObject = stream;
-            } catch (error) {
-                console.error("Error accessing the camera: ", error);
-                alert("Unable to access the camera.");
-            }
+    function toggleCamera() {
+        const cameraButton = document.getElementById('cameraButton');
+        isCameraOn = !isCameraOn;
+
+        if (isCameraOn) {
+            cameraButton.classList.add('active');
+            localStorage.setItem('cameraState', 'true');
+            startCamera();
+            sendCameraStatus('on'); // Send 'on' status to backend
+        } else {
+            cameraButton.classList.remove('active');
+            localStorage.setItem('cameraState', 'false');
+            stopCamera();
+            sendCameraStatus('off'); // Send 'off' status to backend
         }
+    }
 
-        function stopCamera() {
-            const video = document.getElementById('video');
-            const stream = video.srcObject;
-
-            if (stream) {
-                const tracks = stream.getTracks();
-                tracks.forEach(track => track.stop());
-                video.srcObject = null;
-            }
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('video').srcObject = stream;
+        } catch (error) {
+            console.error("Error accessing the camera: ", error);
+            alert("Unable to access the camera.");
         }
-    </script>
+    }
+
+    function stopCamera() {
+        const video = document.getElementById('video');
+        const stream = video.srcObject;
+
+        if (stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+            video.srcObject = null;
+        }
+    }
+
+    // Function to send the camera status ('on' or 'off') to the Node.js backend
+    async function sendCameraStatus(status) {
+        try {
+            const response = await fetch('http://localhost:3000/api/camera', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status }) // Send the camera status as JSON
+            });
+
+            const data = await response.json(); // Parse the JSON response from the server
+            console.log('Camera status saved:', data);
+        } catch (error) {
+            console.error('Error sending camera status:', error);
+        }
+    }
+</script>
 </body>
 </html>
 
