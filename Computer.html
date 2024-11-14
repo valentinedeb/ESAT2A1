@@ -332,12 +332,13 @@
             document.body.appendChild(loginContainer);
             loginForm.style.display = "block"; 
 
-            loginForm.addEventListener('submit', function (event) {
+            loginForm.addEventListener('submit', async function (event) {
                 event.preventDefault(); 
                 const username = usernameInput.value;
                 const password = passwordInput.value;
 
-                if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+                const result = await loginUser(username, password);
+                if (result.success) {
                     message.textContent = "Logging in...";
                     message.style.color = "green"; 
                     message.style.display = "block"; 
@@ -351,8 +352,15 @@
                 }
             });
         }
-
-        function startComputer() {
+        async function loginUser(username, password) {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+            return response.json();
+        }
+        async function startComputer() {
             waitingScreen.className = 'waiting-screen';
             waitingScreen.innerHTML = `
                 <div class="loading-message">Starting up your computer...</div>
@@ -360,14 +368,15 @@
             `;
             document.body.appendChild(waitingScreen);
 
-            timeoutId = setTimeout(() => {
+            timeoutId = setTimeout(async () => {
                 document.body.removeChild(waitingScreen);
+                const result = await fetch('/api/start', { method: 'POST' });
                 createLoginForm();
                 localStorage.setItem('computerOn', true);
             }, STARTUP_TIME);
         }
 
-        function shutdownComputer() {
+        async function shutdownComputer() {
             waitingScreen.className = 'waiting-screen';
             waitingScreen.innerHTML = `
                 <div class="loading-message">Shutting down your computer...</div>
@@ -379,36 +388,46 @@
                 if (loginContainer.parentNode) {
                     document.body.removeChild(loginContainer);
                 }
+                await fetch('/api/shutdown', { method: 'POST' });
                 localStorage.removeItem('computerOn');
             }, STARTUP_TIME);
         }
 
-        function initializeComputerState() {
-            const computerOn = localStorage.getItem('computerOn') === 'true';
+ async function initializeComputerState() {
+    try {
+        // Haal de huidige status van de computer op van de backend
+        const response = await fetch('/api/computer-state');
+        const data = await response.json();
 
-            if (computerOn) {
-                toggleSwitch.checked = true;
-                toggleLabel.textContent = "On";
-                createLoginForm();
-            } else {
-                toggleSwitch.checked = false;
-                toggleLabel.textContent = "Off";
-            }
+        // Controleer de status en pas de toggle-switch en het label aan
+        if (data.computerOn) {
+            toggleSwitch.checked = true;
+            toggleLabel.textContent = "On";
+            createLoginForm();  // Toon het inlogscherm als de computer aan staat
+        } else {
+            toggleSwitch.checked = false;
+            toggleLabel.textContent = "Off";
         }
+    } catch (error) {
+        console.error('Fout bij het ophalen van de computerstatus:', error);
+        // Toon een foutmelding als het ophalen mislukt
+        message.textContent = "Error retrieving computer status.";
+        message.style.color = "red";
+        message.style.display = "block";
+    }
+}
 
-        toggleSwitch.addEventListener("change", () => {
-            clearTimeout(timeoutId); 
+toggleSwitch.addEventListener("change", async () => {
+    clearTimeout(timeoutId);
 
-            if (toggleSwitch.checked) {
-                toggleLabel.textContent = "On"; 
-                localStorage.setItem('computerOn', 'true');
-                startComputer(); 
-            } else {
-                toggleLabel.textContent = "Off"; 
-                localStorage.setItem('computerOn', 'false'); 
-                shutdownComputer(); 
-            }
-        });
+    if (toggleSwitch.checked) {
+        toggleLabel.textContent = "On"; 
+        await startComputer();  // Roep de startComputer functie aan die de backend informeert
+    } else {
+        toggleLabel.textContent = "Off"; 
+        await shutdownComputer();  // Roep de shutdownComputer functie aan die de backend informeert
+    }
+});
 
         window.onload = initializeComputerState;
     </script>
