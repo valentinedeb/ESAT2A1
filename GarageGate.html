@@ -178,51 +178,94 @@
 
     <script>
         
-        let garageCode = localStorage.getItem('garageCode') || "1234"; 
-        
-        let gateStatus = localStorage.getItem('gateStatus') === 'true'; 
+        document.addEventListener("DOMContentLoaded", () => {
+    // Get references to the DOM elements
+    const statusSign = document.getElementById("statusSign");
+    const gateButton = document.getElementById("gateButton");
+    const controlCodeInput = document.getElementById("controlCode");
+    const updateButton = document.getElementById("updateButton");
+    const oldGarageCodeInput = document.getElementById("oldGarageCode");
+    const newGarageCodeInput = document.getElementById("newGarageCode");
 
-        const statusSign = document.getElementById("statusSign");
-
-        statusSign.textContent = `Gate is ${gateStatus ? 'Open' : 'Closed'}`;
-        statusSign.className = `status-sign ${gateStatus ? 'status-open' : 'status-closed'}`; 
-
-        const gateButton = document.getElementById("gateButton");
-        const controlCodeInput = document.getElementById("controlCode");
-
-        gateButton.addEventListener("click", () => {
-            const controlCode = controlCodeInput.value;
-            if (controlCode === garageCode) {
-                gateStatus = !gateStatus; 
-                localStorage.setItem('gateStatus', gateStatus); 
+    // Function to fetch current garage gate status and code
+    async function fetchGateData() {
+        try {
+            const response = await fetch('/api/garage');
+            const data = await response.json();
+            if (data) {
+                const { gateStatus, garageCode } = data;
+                // Update UI with fetched data
                 statusSign.textContent = `Gate is ${gateStatus ? 'Open' : 'Closed'}`;
-                statusSign.className = `status-sign ${gateStatus ? 'status-open' : 'status-closed'}`; 
-                alert(`Garage gate ${gateStatus ? 'opened' : 'closed'}.`);
+                statusSign.className = `status-sign ${gateStatus ? 'status-open' : 'status-closed'}`;
+                // Store the garage code and status for local comparison
+                window.garageCode = garageCode;
+                window.gateStatus = gateStatus;
+            }
+        } catch (error) {
+            console.error('Error fetching gate data:', error);
+        }
+    }
+
+    // Update gate status on the backend and UI
+    async function updateGateStatus() {
+        try {
+            const controlCode = controlCodeInput.value;
+            if (controlCode === window.garageCode) {
+                window.gateStatus = !window.gateStatus; // Toggle gate status
+                await fetch('/api/garage/status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ gateStatus: window.gateStatus }),
+                });
+                statusSign.textContent = `Gate is ${window.gateStatus ? 'Open' : 'Closed'}`;
+                statusSign.className = `status-sign ${window.gateStatus ? 'status-open' : 'status-closed'}`;
+                alert(`Garage gate ${window.gateStatus ? 'opened' : 'closed'}.`);
             } else {
                 alert("Incorrect code. Please try again.");
             }
-            controlCodeInput.value = ""; 
-        });
+            controlCodeInput.value = ""; // Reset the input
+        } catch (error) {
+            console.error('Error updating gate status:', error);
+        }
+    }
 
-        const updateButton = document.getElementById("updateButton");
-        const oldGarageCodeInput = document.getElementById("oldGarageCode");
-        const newGarageCodeInput = document.getElementById("newGarageCode");
-
-        updateButton.addEventListener("click", () => {
+    // Update garage code on the backend
+    async function updateGarageCode() {
+        try {
             const oldCode = oldGarageCodeInput.value;
             const newCode = newGarageCodeInput.value;
-            if (oldCode === garageCode && newCode) {
-                garageCode = newCode; 
-                localStorage.setItem('garageCode', garageCode);
+            if (oldCode === window.garageCode && newCode) {
+                await fetch('/api/garage/code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ oldCode, newCode }),
+                });
+                window.garageCode = newCode;
                 alert("Garage gate code updated successfully!");
-                oldGarageCodeInput.value = ""; 
-                newGarageCodeInput.value = ""; 
-            } else if (oldCode !== garageCode) {
+                oldGarageCodeInput.value = "";
+                newGarageCodeInput.value = "";
+            } else if (oldCode !== window.garageCode) {
                 alert("Old code is incorrect. Please try again.");
             } else {
                 alert("Please enter a valid new code.");
             }
-        });
+        } catch (error) {
+            console.error('Error updating garage code:', error);
+        }
+    }
+
+    // Event listeners for button clicks
+    gateButton.addEventListener("click", updateGateStatus);
+    updateButton.addEventListener("click", updateGarageCode);
+
+    // Fetch initial data
+    fetchGateData();
+});
+
     </script>
 
 </body>
