@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alarm System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: #003366;
+            margin: 10px 0;
+            padding: 5px;
+            border-bottom: 2px solid #0056b3;
+            width: 80%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-top: 80px;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+
+        .navbar {
+            background-color: #003366;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            margin: 0 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+            border-radius: 5px;
+        }
+
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background-color: #0056b3;
+            color: white;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+
+        .logout-button:hover {
+            background-color: #0072e6;
+        }
+
+        .logout-button i {
+            margin-right: 5px;
+            font-size: 18px;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .code-input {
+            margin-top: 20px;
+            padding: 10px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .gate-button {
+            margin-top: 10px;
+            padding: 20px 30px;
+            color: white;
+            background: linear-gradient(135deg, #0066cc, #003366);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gate-button:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #0088ff, #004488);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .status-sign {
+            margin-top: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+
+        .status-on {
+            color: #4CAF50;
+        }
+
+        .status-off {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <a href="House.html">Home</a>
+        <a href="Kitchen.html">Kitchen</a>
+        <a href="Garage.html">Garage</a>
+        <a href="LivingRoom.html">Living Room</a>
+        <a href="StudyRoom.html">Study Room</a>
+        <a href="Security.html">Security</a>
+        <a href="site.html" class="logout-button">
+            <i class="fas fa-sign-out-alt"></i> Logout </a>
+    </div>
+
+    <h1>Smart House</h1>
+
+    <h2>Control Alarm</h2>
+    <input type="password" id="controlCode" class="code-input" placeholder="Enter code to activate/deactivate">
+    <button class="gate-button" id="alarmButton">Activate/Deactivate Alarm</button>
+    
+    <div id="statusSign" class="status-sign status-off">Alarm is Off</div>
+
+    <h2>Change Alarm Code</h2>
+    <input type="password" id="oldAlarmCode" class="code-input" placeholder="Enter old code">
+    <input type="password" id="newAlarmCode" class="code-input" placeholder="Enter new code">
+    <button class="gate-button" id="updateButton">Update Code</button>
+
+    <script>
+        const statusSign = document.getElementById("statusSign");
+        const alarmButton = document.getElementById("alarmButton");
+        const controlCodeInput = document.getElementById("controlCode");
+        const updateButton = document.getElementById("updateButton");
+        const oldAlarmCodeInput = document.getElementById("oldAlarmCode");
+        const newAlarmCodeInput = document.getElementById("newAlarmCode");
+
+        fetch('http://localhost:3000/api/settings') // Full URL
+            .then(response => response.json())
+            .then(data => {
+                let alarmCode = data.alarmCode;
+                let alarmStatus = data.alarmStatus;
+
+                statusSign.textContent = `Alarm is ${alarmStatus ? 'On' : 'Off'}`;
+                statusSign.className = `status-sign ${alarmStatus ? 'status-on' : 'status-off'}`;
+
+                alarmButton.addEventListener("click", () => {
+                    const controlCode = controlCodeInput.value;
+
+                    fetch('http://localhost:3000/api/settings/status', { // Full URL
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ alarmCode: controlCode })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.alarmStatus !== undefined) {
+                            alarmStatus = data.alarmStatus;
+                            statusSign.textContent = `Alarm is ${alarmStatus ? 'On' : 'Off'}`;
+                            statusSign.className = `status-sign ${alarmStatus ? 'status-on' : 'status-off'}`;
+                            alert(`Alarm is now ${alarmStatus ? 'activated' : 'deactivated'}.`);
+                        } else {
+                            alert("Incorrect code. Please try again.");
+                        }
+                    })
+                    .catch(error => console.error('Error updating status:', error));
+                    controlCodeInput.value = "";
+                });
+
+                updateButton.addEventListener("click", () => {
+                    const oldCode = oldAlarmCodeInput.value;
+                    const newCode = newAlarmCodeInput.value;
+
+                    fetch('http://localhost:3000/api/settings/update', { // Full URL
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ oldAlarmCode: oldCode, newAlarmCode: newCode })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message || 'Failed to update alarm code');
+                        oldAlarmCodeInput.value = ""; 
+                        newAlarmCodeInput.value = ""; 
+                    })
+                    .catch(error => console.error('Error updating code:', error));
+                });
+            })
+            .catch(error => console.error('Error fetching settings:', error));
+    </script>
+
+</body>
+
+</html>
