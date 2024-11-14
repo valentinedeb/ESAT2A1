@@ -177,44 +177,77 @@
     <i class="fas fa-lightbulb brightness-icon" id="brightnessIcon"></i>
 
     <script>
-        const box = document.getElementById('draggableBox');
-        const balk = document.querySelector('.balk');
-        const brightnessIcon = document.getElementById('brightnessIcon');
+        document.addEventListener("DOMContentLoaded", () => {
+    const box = document.getElementById('draggableBox');
+    const balk = document.querySelector('.balk');
+    const brightnessIcon = document.getElementById('brightnessIcon');
 
-
-        const initialPosition = localStorage.getItem('garageBoxPosition') || 0; 
-        box.style.left = `${initialPosition}px`;
-
-
-        const initialBrightness = initialPosition / (balk.offsetWidth - box.offsetWidth);
-        brightnessIcon.style.opacity = initialBrightness;
-
-        let isDragging = false;
-
-        box.addEventListener('mousedown', () => {
-            isDragging = true;
-        });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                let x = e.clientX - balk.offsetLeft - box.offsetWidth / 2;
-
-                if (x < 0) x = 0;
-                if (x > balk.offsetWidth - box.offsetWidth) x = balk.offsetWidth - box.offsetWidth;
-
-                box.style.left = `${x}px`;
-                localStorage.setItem('garageBoxPosition', x); 
-
-                const brightness = (x / (balk.offsetWidth - box.offsetWidth));
+    // Function to fetch garage light data from the backend
+    async function fetchLightData() {
+        try {
+            const response = await fetch('/api/garage/lights');
+            const data = await response.json();
+            if (data) {
+                const { position, brightness } = data;
+                // Set the position of the box and brightness icon
+                box.style.left = `${position}px`;
                 brightnessIcon.style.opacity = brightness;
             }
-        });
-    </script>
+        } catch (error) {
+            console.error('Error fetching light data:', error);
+        }
+    }
 
+    // Function to update garage light data on the backend
+    async function updateLightData(position, brightness) {
+        try {
+            await fetch('/api/garage/lights', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ position, brightness }),
+            });
+        } catch (error) {
+            console.error('Error updating light data:', error);
+        }
+    }
+
+    // Fetch the initial light data when the page loads
+    fetchLightData();
+
+    // Store the initial position and brightness
+    let isDragging = false;
+
+    box.addEventListener('mousedown', () => {
+        isDragging = true;
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            let x = e.clientX - balk.offsetLeft - box.offsetWidth / 2;
+
+            if (x < 0) x = 0;
+            if (x > balk.offsetWidth - box.offsetWidth) x = balk.offsetWidth - box.offsetWidth;
+
+            box.style.left = `${x}px`;
+
+            // Calculate brightness based on position
+            const brightness = x / (balk.offsetWidth - box.offsetWidth);
+            brightnessIcon.style.opacity = brightness;
+
+            // Send the updated position and brightness to the backend
+            updateLightData(x, brightness);
+        }
+    });
+});
+
+    </script>
+    
 
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
