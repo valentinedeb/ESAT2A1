@@ -200,6 +200,52 @@ app.post('/api/garage/code', (req, res) => {
         }
     });
 
+    
+//Garage lights:
+
+    // Create table if not exists for garage lights
+db.run(`
+    CREATE TABLE IF NOT EXISTS garage_lights (
+        id INTEGER PRIMARY KEY,
+        position INTEGER NOT NULL,
+        brightness REAL NOT NULL
+    )
+`);
+
+// Set initial values if the table is empty
+db.get('SELECT * FROM garage_lights WHERE id = 1', (err, row) => {
+    if (err) {
+        console.error('Error fetching data:', err);
+    } else if (!row) {
+        // Insert initial default values if no data exists
+        db.run('INSERT INTO garage_lights (id, position, brightness) VALUES (1, 0, 0)');
+    }
+});
+
+// Endpoint to get the current garage light position and brightness
+app.get('/api/garage/lights', (req, res) => {
+    db.get('SELECT position, brightness FROM garage_lights WHERE id = 1', (err, row) => {
+        if (err) {
+            res.status(500).json({ error: 'Failed to fetch light data' });
+        } else if (row) {
+            res.json(row);
+        } else {
+            res.json({ position: 0, brightness: 0 });
+        }
+    });
+});
+
+// Endpoint to update the garage light position and brightness
+app.post('/api/garage/lights', (req, res) => {
+    const { position, brightness } = req.body;
+    db.run('UPDATE garage_lights SET position = ?, brightness = ? WHERE id = 1', [position, brightness], function(err) {
+        if (err) {
+            res.status(500).json({ error: 'Failed to update light data' });
+        } else {
+            res.json({ success: true });
+        }
+    });
+});
 });
 // Start the server
 app.listen(port, () => {
