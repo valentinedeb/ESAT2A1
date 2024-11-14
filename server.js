@@ -130,6 +130,77 @@ app.post('/api/kitchen-lights', (req, res) => {
     });
 });
 
+
+// Garage gate
+
+
+// Middleware to parse JSON
+app.use(bodyParser.json());
+
+// Initialize SQLite Database
+const db = new sqlite3.Database('garage.db', (err) => {
+    if (err) {
+        console.error('Error opening database:', err);
+    } else {
+        console.log('Database connected');
+    }
+});
+
+// Create table if not exists
+db.run(`
+    CREATE TABLE IF NOT EXISTS garage (
+        id INTEGER PRIMARY KEY,
+        gateStatus INTEGER NOT NULL,
+        garageCode TEXT NOT NULL
+    )
+`);
+
+// Endpoint to get the current garage gate status and code
+app.get('/api/garage', (req, res) => {
+    db.get('SELECT gateStatus, garageCode FROM garage WHERE id = 1', (err, row) => {
+        if (err) {
+            res.status(500).json({ error: 'Failed to fetch data' });
+        } else if (row) {
+            res.json(row);
+        } else {
+            // Default values if the garage data doesn't exist
+            res.json({ gateStatus: 0, garageCode: '1234' });
+        }
+    });
+});
+
+// Endpoint to update the gate status
+app.post('/api/garage/status', (req, res) => {
+    const { gateStatus } = req.body;
+    db.run('UPDATE garage SET gateStatus = ? WHERE id = 1', [gateStatus], function(err) {
+        if (err) {
+            res.status(500).json({ error: 'Failed to update gate status' });
+        } else {
+            res.json({ success: true });
+        }
+    });
+});
+
+// Endpoint to update the garage code
+app.post('/api/garage/code', (req, res) => {
+    const { oldCode, newCode } = req.body;
+    db.get('SELECT garageCode FROM garage WHERE id = 1', (err, row) => {
+        if (err) {
+            res.status(500).json({ error: 'Failed to fetch garage code' });
+        } else if (row && row.garageCode === oldCode) {
+            db.run('UPDATE garage SET garageCode = ? WHERE id = 1', [newCode], function(err) {
+                if (err) {
+                    res.status(500).json({ error: 'Failed to update garage code' });
+                } else {
+                    res.json({ success: true });
+                }
+            });
+        } else {
+            res.status(400).json({ error: 'Old code is incorrect' });
+        }
+    });
+
+});
 // Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
