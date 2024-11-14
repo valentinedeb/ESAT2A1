@@ -4,6 +4,7 @@ const app = express();
 const port = 3000;
 const sqlite3 = require('sqlite3');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 // Enable CORS to allow the front-end to make requests
 app.use(cors());
@@ -69,6 +70,64 @@ app.post('/api/camera', (req, res) => {
     } else {
         res.status(400).send({ error: 'Invalid status' });
     }
+});
+
+// Kitchen-lights code
+// Function to initialize the database and ensure the table exists
+function initializeDatabase() {
+    const db = new sqlite3.Database(path.join(__dirname, 'kitchenlights.db'), (err) => {
+        if (err) {
+            console.error('Error opening database:', err);
+        } else {
+            console.log('Database connected');
+        }
+    });
+
+    // Create the table if it doesn't exist
+    db.serialize(() => {
+        db.run('CREATE TABLE IF NOT EXISTS kitchen_lights (id INTEGER PRIMARY KEY, brightness INTEGER)');
+        db.get('SELECT COUNT(*) AS count FROM kitchen_lights', (err, row) => {
+            if (row.count === 0) {
+                // Insert initial brightness value (e.g., 0)
+                db.run('INSERT INTO kitchen_lights (brightness) VALUES (0)');
+            }
+        });
+    });
+
+    return db;
+}
+
+// API to fetch the current brightness
+app.get('/api/kitchen-lights', (req, res) => {
+    const db = initializeDatabase();
+
+    db.get('SELECT brightness FROM kitchen_lights WHERE id = 1', (err, row) => {
+        if (err) {
+            console.error('Error fetching brightness:', err);
+            return res.status(500).send('Server error');
+        }
+        // If no value is found, return the default brightness of 0
+        res.json({ brightness: row ? row.brightness : 0 });
+    });
+});
+
+// API to update the brightness
+app.post('/api/kitchen-lights', (req, res) => {
+    const { brightness } = req.body;
+
+    if (brightness === undefined || isNaN(brightness)) {
+        return res.status(400).send('Invalid brightness value');
+    }
+
+    const db = initializeDatabase();
+
+    db.run('UPDATE kitchen_lights SET brightness = ? WHERE id = 1', [brightness], function(err) {
+        if (err) {
+            console.error('Error updating brightness:', err);
+            return res.status(500).send('Server error');
+        }
+        res.send({ message: 'Brightness updated successfully' });
+    });
 });
 
 // Start the server
