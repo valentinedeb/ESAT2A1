@@ -247,7 +247,6 @@
         }
     </style>
 </head>
-
 <body>
 
     <div class="navbar">
@@ -304,65 +303,74 @@
 
         let coffeeQueue = [];
 
-        window.onload = function () {
-            const savedState = localStorage.getItem('coffeeMachineState');
-            if (savedState === 'on') {
-                toggleSwitch.checked = true;
-                toggleLabel.textContent = "On";
-                toggleLabel.classList.remove("off");
-                toggleLabel.classList.add("on");
-            } else {
-                toggleSwitch.checked = false;
-                toggleLabel.textContent = "Off";
-                toggleLabel.classList.remove("on");
-                toggleLabel.classList.add("off");
+        // Fetch initial machine state
+        async function fetchInitialState() {
+            try {
+                const response = await fetch('/api/coffee-machine');
+                if (!response.ok) throw new Error('Failed to fetch initial state');
+
+                const data = await response.json();
+                toggleSwitch.checked = data.power;
+                toggleLabel.textContent = data.power ? 'On' : 'Off';
+                toggleLabel.classList.toggle('on', data.power);
+                toggleLabel.classList.toggle('off', !data.power);
+                disableButtons(!data.power);
+            } catch (error) {
+                console.error('Error fetching initial state:', error);
+                alert('Failed to load initial data.');
             }
-            disableButtons(savedState === 'off'); 
-        };
+        }
 
-        toggleSwitch.addEventListener("change", () => {
+        toggleSwitch.addEventListener("change", async () => {
             const isTurningOn = toggleSwitch.checked;
-            toggleLabel.textContent = isTurningOn ? "Turning on..." : "Turning off...";
-            disableButtons(true);
+            try {
+                const response = await fetch('/api/coffee-machine', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ power: isTurningOn })
+                });
+                if (!response.ok) throw new Error('Failed to update power state');
 
-            setTimeout(() => {
-                if (isTurningOn) {
-                    toggleLabel.textContent = "On";
-                    toggleLabel.classList.remove("off");
-                    toggleLabel.classList.add("on");
-                    localStorage.setItem('coffeeMachineState', 'on');
-                } else {
-                    toggleLabel.textContent = "Off";
-                    toggleLabel.classList.remove("on");
-                    toggleLabel.classList.add("off");
-                    localStorage.setItem('coffeeMachineState', 'off');
-                }
-                disableButtons(false); 
-            }, 5000);
+                toggleLabel.textContent = isTurningOn ? 'On' : 'Off';
+                toggleLabel.classList.toggle('on', isTurningOn);
+                toggleLabel.classList.toggle('off', !isTurningOn);
+                disableButtons(!isTurningOn);
+            } catch (error) {
+                console.error('Error toggling power state:', error);
+                alert('Failed to update power state.');
+            }
         });
 
         function disableButtons(disable) {
-            espressoButton.style.pointerEvents = disable ? 'none' : 'auto';
-            longoButton.style.pointerEvents = disable ? 'none' : 'auto';
-            cappuccinoButton.style.pointerEvents = disable ? 'none' : 'auto';
-            latteButton.style.pointerEvents = disable ? 'none' : 'auto';
-            espressoButton.style.opacity = disable ? '0.5' : '1';
-            longoButton.style.opacity = disable ? '0.5' : '1';
-            cappuccinoButton.style.opacity = disable ? '0.5' : '1';
-            latteButton.style.opacity = disable ? '0.5' : '1';
+            [espressoButton, longoButton, cappuccinoButton, latteButton].forEach(button => {
+                button.style.pointerEvents = disable ? 'none' : 'auto';
+                button.style.opacity = disable ? '0.5' : '1';
+            });
         }
 
         function addToQueue(coffeeType) {
-            const isMachineOn = toggleSwitch.checked;
-            if (!isMachineOn) {
+            if (!toggleSwitch.checked) {
                 alert("The coffee machine is off. Please turn it on first.");
                 return;
             }
-            coffeeQueue.push(coffeeType);
-            updateCoffeeQueue();
-            if (coffeeQueue.length === 1) {
-                startCoffeePreparation();
-            }
+
+            fetch('/api/coffee-machine/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: coffeeType })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to add to queue');
+                coffeeQueue.push(coffeeType);
+                updateCoffeeQueue();
+                if (coffeeQueue.length === 1) {
+                    startCoffeePreparation();
+                }
+            })
+            .catch(error => {
+                console.error('Error adding to queue:', error);
+                alert('Failed to add coffee to queue.');
+            });
         }
 
         function updateCoffeeQueue() {
@@ -400,10 +408,11 @@
         cappuccinoButton.addEventListener("click", () => addToQueue("Cappuccino"));
         latteButton.addEventListener("click", () => addToQueue("Latte"));
 
+        // Load initial data when the page loads
+        fetchInitialState();
     </script>
 
 </body>
 </html>
-
 
 
