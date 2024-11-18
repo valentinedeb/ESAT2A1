@@ -303,6 +303,26 @@ app.post('/api/living-lights', (req, res) => {
     });
 });
 
+// code computer
+// Variabele om de status van de computer bij te houden
+let computerState = false; // false betekent dat de computer uit staat, true betekent dat de computer aan staat
+
+// Eindpunt om de huidige computerstatus op te halen
+app.get('/api/computer-state', (req, res) => {
+    res.json({ computerOn: computerState });
+});
+
+// Eindpunt om de computer aan te zetten
+app.post('/api/start', (req, res) => {
+    computerState = true;  // Zet de computerstatus op "aan"
+    res.json({ success: true, message: "Computer started" });
+});
+
+// Eindpunt om de computer uit te zetten
+app.post('/api/shutdown', (req, res) => {
+    computerState = false; // Zet de computerstatus op "uit"
+    res.json({ success: true, message: "Computer shut down" });
+});
 
 
 // Start the server
