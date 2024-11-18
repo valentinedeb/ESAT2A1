@@ -357,6 +357,83 @@ app.post('/api/studyroom-lights', (req, res) => {
 });
 
 
+// Kitchen Stove
+// SQLite Database Setup
+const db = new sqlite3.Database('./kitchen.db', (err) => {
+    if (err) {
+        console.error('Error opening database:', err.message);
+    } else {
+        console.log('Connected to SQLite database.');
+    }
+});
+
+// Initialize database
+db.serialize(() => {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS stoves (
+            id INTEGER PRIMARY KEY,
+            state INTEGER DEFAULT 0,
+            strength INTEGER DEFAULT 0
+        )
+    `);
+
+    // Initialize 4 stoves
+    for (let i = 1; i <= 4; i++) {
+        db.run(`INSERT OR IGNORE INTO stoves (id, state, strength) VALUES (?, 0, 0)`, [i]);
+    }
+});
+
+// API Endpoints
+
+// Get state and strength for a specific stove
+app.get('/api/stove/:id', (req, res) => {
+    const id = req.params.id;
+
+    db.get('SELECT state, strength FROM stoves WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            console.error('Error fetching stove data:', err.message);
+            res.status(500).json({ error: 'Database error' });
+        } else {
+            res.json(row || { state: 0, strength: 0 });
+        }
+    });
+});
+
+// Update state (on/off) of a specific stove
+app.post('/api/stove/:id/state', (req, res) => {
+    const id = req.params.id;
+    const { state } = req.body;
+
+    db.run('UPDATE stoves SET state = ? WHERE id = ?', [state ? 1 : 0, id], (err) => {
+        if (err) {
+            console.error('Error updating stove state:', err.message);
+            res.status(500).json({ error: 'Database error' });
+        } else {
+            res.json({ message: 'Stove state updated' });
+        }
+    });
+});
+
+// Update strength of a specific stove
+app.post('/api/stove/:id/strength', (req, res) => {
+    const id = req.params.id;
+    const { strength } = req.body;
+
+    if (strength < 0 || strength > 9) {
+        return res.status(400).json({ error: 'Invalid strength value' });
+    }
+
+    db.run('UPDATE stoves SET strength = ? WHERE id = ?', [strength, id], (err) => {
+        if (err) {
+            console.error('Error updating stove strength:', err.message);
+            res.status(500).json({ error: 'Database error' });
+        } else {
+            res.json({ message: 'Stove strength updated' });
+        }
+    });
+});
+
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
