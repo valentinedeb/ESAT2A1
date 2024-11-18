@@ -236,36 +236,41 @@
         const toggleLabel = document.getElementById("toggleLabel");
 
         // Load TV state from localStorage
-        const savedState = localStorage.getItem("tvState");
-        if (savedState === "on") {
-            toggleSwitch.checked = true;
-            toggleLabel.textContent = "On";
-            toggleLabel.classList.remove("off");
-            toggleLabel.classList.add("on");
-        } else {
-            toggleSwitch.checked = false;
-            toggleLabel.textContent = "Off";
-            toggleLabel.classList.remove("on");
-            toggleLabel.classList.add("off");
-        }
+        (async function fetchTVState() {
+            try {
+                const response = await fetch('/api/tv-state'); // Vraag de TV-status op van de backend
+                const data = await response.json();
+                const savedState = data.tvState ? "on" : "off"; // Gebruik backend data
+                toggleSwitch.checked = savedState === "on";
+                toggleLabel.textContent = savedState === "on" ? "On" : "Off";
+                toggleLabel.classList.toggle("on", savedState === "on");
+                toggleLabel.classList.toggle("off", savedState !== "on");
+            } catch (error) {
+                console.error("Error fetching TV state:", error);
+                toggleLabel.textContent = "Error";
+            }
+        })();
 
-        toggleSwitch.addEventListener("change", () => {
+
+        toggleSwitch.addEventListener("change", async () => {
             const isChecked = toggleSwitch.checked;
 
             toggleLabel.textContent = isChecked ? "Turning On..." : "Turning Off...";
-            setTimeout(() => {
-                if (isChecked) {
-                    toggleLabel.textContent = "On";
-                    toggleLabel.classList.remove("off");
-                    toggleLabel.classList.add("on");
-                    localStorage.setItem("tvState", "on"); 
+            try {
+                const response = await fetch(isChecked ? '/api/tv-on' : '/api/tv-off', {
+                    method: 'POST',
+                });
+                if (response.ok) {
+                    toggleLabel.textContent = isChecked ? "On" : "Off";
+                    toggleLabel.classList.toggle("on", isChecked);
+                    toggleLabel.classList.toggle("off", !isChecked);
                 } else {
-                    toggleLabel.textContent = "Off";
-                    toggleLabel.classList.remove("on");
-                    toggleLabel.classList.add("off");
-                    localStorage.setItem("tvState", "off"); 
+                    throw new Error("Failed to update TV state");
                 }
-            }, 5000); 
+            } catch (error) {
+                console.error("Error updating TV state:", error);
+                toggleLabel.textContent = "Error";
+            }
         });
     </script>
 
