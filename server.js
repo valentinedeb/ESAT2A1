@@ -432,7 +432,25 @@ app.post('/api/stove/:id/strength', (req, res) => {
         }
     });
 });
+// soundboxes
+// Dummy data for soundbox state
+let soundboxState = "off"; // Standaard staat van de soundbox
 
+// Endpoint om de huidige soundbox status op te halen
+app.get('/api/soundbox/state', (req, res) => {
+    res.json({ state: soundboxState });
+});
+
+// Endpoint om de soundbox status bij te werken
+app.post('/api/soundbox/state', (req, res) => {
+    const { state } = req.body;
+    if (state === "on" || state === "off") {
+        soundboxState = state; // Update de staat
+        res.json({ success: true });
+    } else {
+        res.status(400).json({ success: false, message: "Ongeldige status" });
+    }
+});
 
 // Start the server
 app.listen(port, () => {
