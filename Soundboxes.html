@@ -235,8 +235,42 @@
         const toggleSwitch = document.getElementById("toggleSwitch");
         const toggleLabel = document.getElementById("toggleLabel");
 
-        window.onload = function() {
-            const savedState = localStorage.getItem('soundboxState');
+        // Backend API Base URL
+        const apiBaseUrl = "http://localhost:3000/api/soundbox"; // Vervang dit met je backend URL
+
+        // Haal de huidige soundbox status op van de backend
+        async function fetchSoundboxState() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/state`);
+                const data = await response.json();
+                return data.state; // Verwacht antwoord: { state: "on" } of { state: "off" }
+            } catch (error) {
+                console.error("Fout bij het ophalen van soundbox-status:", error);
+                return "off"; // Standaard status als er een fout optreedt
+            }
+        }
+
+        // Stuur de bijgewerkte status naar de backend
+        async function updateSoundboxState(state) {
+            try {
+                const response = await fetch(`${apiBaseUrl}/state`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ state })
+                });
+                const data = await response.json();
+                return data.success; // Verwacht antwoord: { success: true }
+            } catch (error) {
+                console.error("Fout bij het updaten van de soundbox-status:", error);
+                return false;
+            }
+        }
+
+        // Initialiseer de status bij het laden van de pagina
+        window.onload = async function() {
+            const savedState = await fetchSoundboxState();
             if (savedState === 'on') {
                 toggleSwitch.checked = true;
                 toggleLabel.textContent = "On";
@@ -250,23 +284,21 @@
             }
         };
 
-        toggleSwitch.addEventListener("change", () => {
-            if (toggleSwitch.checked) {
-                toggleLabel.textContent = "Turning On...";
+        // Update de status wanneer de switch verandert
+        toggleSwitch.addEventListener("change", async () => {
+            const newState = toggleSwitch.checked ? "on" : "off";
+            toggleLabel.textContent = toggleSwitch.checked ? "Turning On..." : "Turning Off...";
+            const success = await updateSoundboxState(newState);
+
+            if (success) {
                 setTimeout(() => {
-                    toggleLabel.textContent = "On";
-                    toggleLabel.classList.remove("off");
-                    toggleLabel.classList.add("on");
-                    localStorage.setItem('soundboxState', 'on');
+                    toggleLabel.textContent = toggleSwitch.checked ? "On" : "Off";
+                    toggleLabel.classList.toggle("on", toggleSwitch.checked);
+                    toggleLabel.classList.toggle("off", !toggleSwitch.checked);
                 }, 5000);
             } else {
-                toggleLabel.textContent = "Turning Off...";
-                setTimeout(() => {
-                    toggleLabel.textContent = "Off";
-                    toggleLabel.classList.remove("on");
-                    toggleLabel.classList.add("off");
-                    localStorage.setItem('soundboxState', 'off');
-                }, 5000);
+                alert("Fout bij het updaten van de soundbox-status. Probeer opnieuw.");
+                toggleSwitch.checked = !toggleSwitch.checked; // Keer terug naar vorige status
             }
         });
     </script>
