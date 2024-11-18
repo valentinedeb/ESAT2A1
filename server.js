@@ -247,6 +247,64 @@ app.post('/api/garage/lights', (req, res) => {
     });
 });
 });
+
+
+// LivingLights
+
+// SQLite Database Setup
+const db = new sqlite3.Database('./livinglighs.db', (err) => {
+    if (err) {
+        console.error('Error opening database:', err.message);
+    } else {
+        console.log('Connected to SQLite database.');
+    }
+});
+
+// Initialize the brightness table
+db.serialize(() => {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS living_lights (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            brightness REAL
+        )
+    `);
+    db.run(`
+        INSERT OR IGNORE INTO living_lights (id, brightness) VALUES (1, 0.5)
+    `); // Default brightness is 50%
+});
+
+// GET: Fetch current brightness
+app.get('/api/living-lights', (req, res) => {
+    db.get('SELECT brightness FROM living_lights WHERE id = 1', (err, row) => {
+        if (err) {
+            console.error('Error fetching brightness:', err.message);
+            res.status(500).json({ error: 'Database error' });
+        } else {
+            res.json(row || { brightness: 0 });
+        }
+    });
+});
+
+// POST: Update brightness
+app.post('/api/living-lights', (req, res) => {
+    const { brightness } = req.body;
+
+    if (typeof brightness !== 'number' || brightness < 0 || brightness > 1) {
+        return res.status(400).json({ error: 'Invalid brightness value' });
+    }
+
+    db.run('UPDATE living_lights SET brightness = ? WHERE id = 1', [brightness], (err) => {
+        if (err) {
+            console.error('Error updating brightness:', err.message);
+            res.status(500).json({ error: 'Database error' });
+        } else {
+            res.json({ message: 'Brightness updated successfully' });
+        }
+    });
+});
+
+
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
