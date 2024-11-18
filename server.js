@@ -433,6 +433,63 @@ app.post('/api/stove/:id/strength', (req, res) => {
     });
 });
 
+//CoffeeMachine
+
+// SQLite Database Setup voor koffiemachine
+const coffeeDb = new sqlite3.Database('./coffee_machine.db', (err) => {
+    if (err) {
+        console.error('Error opening database:', err.message);
+    } else {
+        console.log('Connected to coffee machine database.');
+        // Initialiseer de database indien deze nog niet bestaat
+        coffeeDb.run(`
+            CREATE TABLE IF NOT EXISTS coffee_machine (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                power BOOLEAN NOT NULL DEFAULT false
+            )
+        `, (err) => {
+            if (err) {
+                console.error('Error creating table:', err.message);
+            } else {
+                // Voeg een rij in als deze nog niet bestaat
+                coffeeDb.run(`
+                    INSERT INTO coffee_machine (power)
+                    SELECT false
+                    WHERE NOT EXISTS (SELECT 1 FROM coffee_machine)
+                `);
+            }
+        });
+    }
+});
+
+// Endpoint om de huidige status van het koffiezetapparaat op te vragen
+app.get('/api/coffee-machine', (req, res) => {
+    coffeeDb.get('SELECT power FROM coffee_machine LIMIT 1', (err, row) => {
+        if (err) {
+            res.status(500).json({ error: 'Error fetching data' });
+        } else {
+            res.json({ power: row ? row.power : false });
+        }
+    });
+});
+
+// Endpoint om de status van het koffiezetapparaat bij te werken
+app.post('/api/coffee-machine', (req, res) => {
+    const { power } = req.body;
+
+    if (typeof power !== 'boolean') {
+        return res.status(400).json({ error: 'Invalid power value' });
+    }
+
+    coffeeDb.run('UPDATE coffee_machine SET power = ? WHERE id = 1', [power], function(err) {
+        if (err) {
+            res.status(500).json({ error: 'Error updating power status' });
+        } else {
+            res.json({ message: 'Coffee machine power status updated' });
+        }
+    });
+});
+
 
 // Start the server
 app.listen(port, () => {
