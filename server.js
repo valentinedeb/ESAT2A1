@@ -355,6 +355,26 @@ app.post('/api/studyroom-lights', (req, res) => {
         }
     });
 });
+// televisie
+// Variabele om de status van de televisie bij te houden
+let tvState = false; // false betekent uit, true betekent aan
+
+// Haal de huidige status van de televisie op
+app.get('/api/tv-state', (req, res) => {
+    res.json({ tvState });
+});
+
+// Zet de televisie aan
+app.post('/api/tv-on', (req, res) => {
+    tvState = true;
+    res.json({ success: true, message: "Television turned on" });
+});
+
+// Zet de televisie uit
+app.post('/api/tv-off', (req, res) => {
+    tvState = false;
+    res.json({ success: true, message: "Television turned off" });
+});
 
 
 // Start the server
